@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor MRI Classification</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+
+        .brain-image {
+            width: 100%;
+            height: 240px;
+            object-fit: contain;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background: linear-gradient(135deg, #93C5FD 0%, #C4B5FD 100%);
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .icon-container i-lucide {
+            width: 3rem;
+            height: 3rem;
+            color: #4F46E5;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #4B5563;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #D1D5DB;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .upload-area.dragging {
+            border-color: #4F46E5;
+            background-color: #EEF2FF;
+        }
+
+        .upload-area:hover {
+            border-color: #4F46E5;
+        }
+
+        .upload-icon {
+            width: 3rem;
+            height: 3rem;
+            color: #9CA3AF;
+            margin: 0 auto 1rem;
+        }
+
+        .upload-text {
+            color: #4B5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .browse-button {
+            display: inline-block;
+            background-color: #4F46E5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .browse-button:hover {
+            background-color: #4338CA;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .error {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #FEF2F2;
+            border-radius: 0.5rem;
+            color: #DC2626;
+            display: flex;
+            align-items: center;
+            display: none;
+        }
+
+        .error i-lucide {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+        }
+
+        .preview {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .preview-title {
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-image {
+            max-height: 16rem;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            display: block;
+        }
+
+        .loading {
+            margin-top: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .loading i-lucide {
+            width: 2rem;
+            height: 2rem;
+            color: #4F46E5;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4B5563;
+            margin-top: 0.5rem;
+        }
+
+        .results {
+            margin-top: 1.5rem;
+            background-color: #EEF2FF;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .results-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .result-item {
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .result-label {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img 
+            src="https://images.unsplash.com/photo-1617791160505-6f00504e3519?auto=format&fit=crop&w=800&h=400&q=80" 
+            alt="Brain illustration" 
+            class="brain-image"
+        />
+        
+        <div class="header">
+            <div class="icon-container">
+                <i-lucide name="brain"></i-lucide>
+            </div>
+            <h1>Brain Tumor MRI Classification</h1>
+            <p class="subtitle">Upload an MRI scan to detect and classify brain tumors</p>
+        </div>
+
+        <div class="card">
+            <div class="upload-area" id="dropZone">
+                <i-lucide class="upload-icon" name="upload"></i-lucide>
+                <p class="upload-text">Drag and drop your MRI image here, or</p>
+                <label class="browse-button">
+                    Browse Files
+                    <input type="file" id="fileInput" accept="image/*">
+                </label>
+            </div>
+
+            <div class="error" id="error">
+                <i-lucide name="alert-circle"></i-lucide>
+                <span id="errorText"></span>
+            </div>
+
+            <div class="preview" id="preview">
+                <p class="preview-title">Uploaded Image:</p>
+                <img id="previewImage" class="preview-image" alt="Uploaded MRI">
+            </div>
+
+            <div class="loading" id="loading">
+                <i-lucide name="loader-2"></i-lucide>
+                <p class="loading-text">Analyzing image...</p>
+            </div>
+
+            <div class="results" id="results">
+                <h2 class="results-title">Analysis Results</h2>
+                <p class="result-item">
+                    <span class="result-label">Tumor Type:</span>
+                    <span id="tumorType"></span>
+                </p>
+                <p class="result-item">
+                    <span class="result-label">Confidence:</span>
+                    <span id="confidence"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const error = document.getElementById('error');
+        const errorText = document.getElementById('errorText');
+        const preview = document.getElementById('preview');
+        const previewImage = document.getElementById('previewImage');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const tumorType = document.getElementById('tumorType');
+        const confidence = document.getElementById('confidence');
+
+        // Drag and drop handlers
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragging');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                processImage(file);
+            }
+        });
+
+        // File input handler
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                processImage(file);
+            }
+        });
+
+        // Process the uploaded image
+        async function processImage(file) {
+            // Reset UI state
+            error.style.display = 'none';
+            results.style.display = 'none';
+
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                showError('Please upload an image file (JPG or PNG)');
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Send to API
+            try {
+                loading.style.display = 'block';
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('http://localhost:8000/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to process image');
+                }
+
+                const data = await response.json();
+                showResults(data);
+            } catch (err) {
+                showError('Failed to process image. Please try again.');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            errorText.textContent = message;
+            error.style.display = 'flex';
+        }
+
+        // Show results
+        function showResults(data) {
+            tumorType.textContent = data.class;
+            confidence.textContent = `${(data.confidence * 100).toFixed(2)}%`;
+            results.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
