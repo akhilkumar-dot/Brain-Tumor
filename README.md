@@ -23,23 +23,6 @@ By automating the classification process, this model can assist doctors, researc
 
 ---
 
-## 📂 Repository Structure
-
-Brain-disease/
-├── dataset.dvc
-├── mlruns/ # MLflow experiment tracking
-├── scripts/
-│ ├── preprocess.py # Data cleaning, resizing, and augmentation
-│ ├── train.py # CNN model training & evaluation
-│ └── inference.py # Run predictions on new CT images
-├── models/ # Saved trained models
-├── main.py # Entry point to run the entire workflow
-├── requirements.txt
-└── README.md
-
-
----
-
 ## 🧠 Model Architecture
 
 - **Model Type:** Custom Convolutional Neural Network (CNN)  
